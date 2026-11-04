@@ -1,804 +1,297 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#080b16">
-<title>NEXUS — Digital Universe</title>
-<style>
-:root{
- --bg:#080b16;
- --panel:rgba(19,25,43,.88);
- --line:rgba(153,174,220,.15);
- --text:#f3f6ff;
- --muted:#8490ad;
- --blue:#66d9ff;
- --purple:#a68bff;
- --green:#7df5c2;
-}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden}
-body{
- background:var(--bg);color:var(--text);
- font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-button,input,select{font:inherit}
-button{cursor:pointer}
-button:focus-visible,input:focus-visible,select:focus-visible{
- outline:2px solid var(--blue);outline-offset:3px
-}
-#universe{
- position:fixed;inset:0;width:100%;height:100%;
- touch-action:none;display:block;
-}
-.vignette{
- position:fixed;inset:0;pointer-events:none;
- background:radial-gradient(ellipse at center,transparent 35%,#050710aa 100%);
-}
-header{
- position:fixed;top:0;left:0;right:0;height:66px;
- display:flex;align-items:center;justify-content:space-between;
- padding:0 25px;z-index:5;
- background:linear-gradient(180deg,#080b16e8,transparent);
-}
-.brand{
- font-size:19px;font-weight:950;letter-spacing:5px;
-}
-.brand span{color:var(--blue)}
-.header-right{display:flex;align-items:center;gap:10px}
-.live{
- font-size:10px;color:var(--green);letter-spacing:2px;
- display:flex;align-items:center;gap:7px;
-}
-.dot{
- width:7px;height:7px;border-radius:50%;
- background:var(--green);box-shadow:0 0 12px var(--green);
- animation:blink 1.5s infinite;
-}
-@keyframes blink{50%{opacity:.3}}
-.iconbtn{
- width:38px;height:38px;border-radius:12px;
- border:1px solid var(--line);background:#151c30;color:white;
-}
-.hero{
- position:fixed;top:17%;left:50%;transform:translateX(-50%);
- text-align:center;width:90%;pointer-events:none;
- transition:opacity .5s;
-}
-.eyebrow{
- font-size:10px;letter-spacing:5px;color:var(--blue);
- font-weight:800;
-}
-.hero h1{
- font-size:clamp(38px,7vw,78px);letter-spacing:-4px;
- margin:12px 0 8px;font-weight:850;
- text-shadow:0 0 45px #83baff32;
-}
-.hero p{font-size:13px;color:#a3aec7;letter-spacing:.4px}
-.hint{
- position:fixed;bottom:26px;left:50%;transform:translateX(-50%);
- color:#a3aec7;font-size:11px;letter-spacing:1px;
- text-align:center;white-space:nowrap;pointer-events:none;
- background:#10162999;padding:10px 17px;border-radius:30px;
- border:1px solid var(--line);backdrop-filter:blur(12px);
-}
-.panel{
- position:fixed;z-index:4;top:83px;bottom:18px;left:18px;
- width:285px;background:var(--panel);
- border:1px solid var(--line);border-radius:20px;
- backdrop-filter:blur(24px);padding:17px;
- overflow-y:auto;scrollbar-width:thin;
- scrollbar-color:#36435e transparent;
- transition:transform .35s,opacity .35s;
-}
-.panel.right{
- left:auto;right:18px;width:245px;
-}
-.panel.closed{transform:translateX(-320px);opacity:0;pointer-events:none}
-.panel.right.closed{transform:translateX(320px)}
-.section{
- padding:13px 0;border-bottom:1px solid var(--line);
-}
-.section:last-child{border:0}
-.section-title{
- display:flex;justify-content:space-between;align-items:center;
- font-size:10px;font-weight:850;letter-spacing:2px;
- color:#9caaca;margin-bottom:12px;
-}
-.section-title span{color:var(--blue)}
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.mode{
- border:1px solid var(--line);background:#ffffff06;
- border-radius:11px;color:#b8c4dc;padding:11px 7px;
- font-size:11px;text-align:left;transition:.2s;
-}
-.mode strong{display:block;font-size:19px;margin-bottom:5px}
-.mode.active{
- border-color:#68d9ff8a;background:#65d9ff17;color:white;
- box-shadow:inset 0 0 15px #65d9ff0b;
-}
-.control{margin:13px 0}
-.control-head{
- display:flex;justify-content:space-between;
- font-size:11px;color:#b5c0d8;margin-bottom:9px;
-}
-.control-head output{color:var(--blue);font-weight:800}
-input[type=range]{
- width:100%;height:4px;appearance:none;
- background:#35405a;border-radius:10px;accent-color:var(--blue);
-}
-input[type=range]::-webkit-slider-thumb{
- appearance:none;width:14px;height:14px;border-radius:50%;
- background:var(--blue);box-shadow:0 0 12px #65d9ff99;
-}
-select{
- width:100%;padding:11px;background:#151c30;
- color:white;border:1px solid var(--line);border-radius:10px;
- font-size:12px;
-}
-.action{
- width:100%;padding:12px;margin:4px 0;
- border:1px solid var(--line);background:#ffffff08;
- border-radius:11px;color:#e5edff;text-align:left;font-size:11px;
-}
-.action:hover,.mode:hover{background:#65d9ff15;border-color:#65d9ff77}
-.action.primary{
- background:linear-gradient(120deg,#5acfff,#927eff);
- color:#07101f;border:0;font-weight:900;text-align:center;
-}
-.action.danger{color:#ff8d9e}
-.colors{display:flex;gap:9px}
-.swatch{
- width:27px;height:27px;border-radius:50%;
- border:2px solid transparent;outline:1px solid #ffffff22;
-}
-.swatch.active{outline:2px solid white;outline-offset:3px}
-.metric{
- display:flex;justify-content:space-between;
- font-size:11px;padding:8px 0;color:#9ba8c5;
- border-bottom:1px solid #ffffff08;
-}
-.metric strong{color:white;font-variant-numeric:tabular-nums}
-.preset-card{
- border:1px solid var(--line);border-radius:12px;
- padding:12px;margin:8px 0;background:#ffffff05;
- cursor:pointer;
-}
-.preset-card:hover{border-color:var(--blue);background:#65d9ff0c}
-.preset-card b{font-size:12px}
-.preset-card p{font-size:10px;color:var(--muted);margin:5px 0 0;line-height:1.5}
-.panel-heading{font-size:15px;font-weight:850;letter-spacing:-.3px}
-.panel-sub{font-size:10px;color:var(--muted);margin-top:4px}
-.floating{
- position:fixed;z-index:6;top:79px;left:50%;transform:translateX(-50%);
- display:flex;gap:6px;background:#11182bba;
- border:1px solid var(--line);padding:6px;border-radius:14px;
- backdrop-filter:blur(15px);
-}
-.floatbtn{
- border:0;background:transparent;color:#b7c4de;
- padding:9px 11px;border-radius:9px;font-size:11px;
-}
-.floatbtn.active{background:#65d9ff22;color:var(--blue)}
-.toast{
- position:fixed;bottom:75px;left:50%;transform:translate(-50%,15px);
- background:#eaf7ff;color:#07101c;padding:11px 17px;
- border-radius:12px;font-size:12px;font-weight:850;
- opacity:0;transition:.25s;pointer-events:none;z-index:20;
- text-align:center;max-width:90%;
-}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-.panel-toggle{
- position:fixed;z-index:7;bottom:20px;right:20px;
- background:#182139;border:1px solid var(--line);
- color:white;border-radius:12px;padding:12px 15px;font-size:11px;
-}
-.help{
- position:fixed;z-index:9;inset:0;background:#03050cdb;
- display:none;align-items:center;justify-content:center;padding:20px;
- backdrop-filter:blur(15px);
-}
-.help.open{display:flex}
-.helpbox{
- width:min(490px,100%);background:#141b2d;
- border:1px solid var(--line);border-radius:22px;padding:25px;
- max-height:85vh;overflow:auto;
-}
-.helpbox h2{font-size:25px;margin:0 0 10px}
-.helpbox p,.helpbox li{color:#a9b6d1;font-size:12px;line-height:1.8}
-.helpbox button{margin-top:10px}
-@media(max-width:700px){
- header{height:55px;padding:0 14px}
- .brand{font-size:16px}
- .hero{top:16%}
- .hero h1{letter-spacing:-2px}
- .hero p{font-size:11px}
- .panel{
-  top:auto;bottom:12px;left:10px;right:10px;width:auto;
-  max-height:43vh;border-radius:17px;padding:12px;
- }
- .panel.right{display:none}
- .panel.closed{transform:translateY(120%);opacity:0}
- .floating{top:65px}
- .hint{bottom:47vh;font-size:9px}
- .panel-toggle{bottom:calc(43vh + 22px);right:12px}
- .section{padding:9px 0}
- .mode{padding:8px}
- .mode strong{font-size:16px}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapsül</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --card-bg: #111113;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f5f5f7;
+            --text-secondary: #86868b;
+            --accent: #2997ff;
+            --accent-hover: #0077ED;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 600;
+            letter-spacing: -0.015em;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        p.subtitle {
+            font-size: 19px;
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: -0.009em;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 32px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            margin-bottom: 24px;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        textarea {
+            width: 100%;
+            height: 140px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 17px;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .counter {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        button {
+            background-color: var(--text-primary);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 980px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #e8e8ed;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .secondary-btn {
+            background-color: transparent;
+            color: var(--accent);
+            border: 1px solid rgba(41, 151, 255, 0.3);
+            margin-top: 10px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .secondary-btn:hover {
+            background-color: rgba(41, 151, 255, 0.08);
+            border-color: var(--accent);
+        }
+
+        /* Gelen Mesaj Alanı */
+        #whisper-display {
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            padding: 10px;
+            font-style: italic;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            letter-spacing: -0.01em;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            background: #333336;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
 
-<canvas id="universe"></canvas>
-<div class="vignette"></div>
+    <div class="container">
+        <header class="fade-in">
+            <h1>Kapsül.</h1>
+            <p class="subtitle">Evrene bırakılan anonim fısıltılar.</p>
+        </header>
 
-<header>
- <div class="brand">NEX<span>U</span>S.</div>
- <div class="header-right">
-  <div class="live"><i class="dot"></i> SIMULATION LIVE</div>
-  <button class="iconbtn" id="helpBtn" title="Yardım">?</button>
- </div>
-</header>
+        <!-- Mesaj Yazma Kartı -->
+        <div class="card fade-in">
+            <textarea id="messageInput" maxlength="280" placeholder="İçinde kalan, kimseye söyleyemediğin o şeyi yaz..."></textarea>
+            <div class="actions">
+                <span class="counter"><span id="charCount">0</span>/280</span>
+                <button onclick="saveMessage()">Evrene Bırak</button>
+            </div>
+        </div>
 
-<div class="hero" id="hero">
- <div class="eyebrow">AN INTERACTIVE UNIVERSE</div>
- <h1>Shape the chaos.</h1>
- <p>Dokun. Değiştir. Keşfet. Kendi evrenini oluştur.</p>
-</div>
+        <!-- Mesaj Okuma Kartı -->
+        <div class="card fade-in" style="margin-top: 12px;">
+            <div id="whisper-display">"Geçmişteki bana: Beklediğinden çok daha güçlüsün."</div>
+            <button class="secondary-btn" onclick="getRandomWhisper()">Başka Bir Yabancının Fısıltısını Dinle</button>
+        </div>
+    </div>
 
-<div class="floating">
- <button class="floatbtn active" data-mode="gravity">◉ Çekim</button>
- <button class="floatbtn" data-mode="repel">✳ İtme</button>
- <button class="floatbtn" data-mode="vortex">◎ Girdap</button>
- <button class="floatbtn" data-mode="blackhole">● Kara delik</button>
-</div>
+    <footer class="fade-in">
+        <p>Gizlilik esastır. Kimlikler saklanmaz, kelimeler zamana bırakılır.</p>
+    </footer>
 
-<aside class="panel" id="leftPanel">
- <div class="section">
-  <div class="panel-heading">Evren kontrolü</div>
-  <div class="panel-sub">Sistemin fizik kurallarını değiştir.</div>
- </div>
+    <div id="toast" class="toast">Kapsül başarıyla boşluğa fırlatıldı.</div>
 
- <div class="section">
-  <div class="section-title">ETKİLEŞİM <span>01</span></div>
-  <div class="mode-grid">
-   <button class="mode active" data-mode="gravity"><strong>◉</strong>Yerçekimi</button>
-   <button class="mode" data-mode="repel"><strong>✳</strong>İtme alanı</button>
-   <button class="mode" data-mode="vortex"><strong>◎</strong>Girdap</button>
-   <button class="mode" data-mode="blackhole"><strong>●</strong>Kara delik</button>
-   <button class="mode" data-mode="explosion"><strong>✹</strong>Patlama</button>
-   <button class="mode" data-mode="paint"><strong>✦</strong>Parçacık ekle</button>
-  </div>
- </div>
+    <script>
+        // Varsayılan havuz
+        const defaultWhispers = [
+            "10 yıl önce lisede arkasından baktığım o kız, umarım çok mutlusundur.",
+            "Gelecekteki ben, umarım o arabayı almışsındır ve hala kahveyi sert seviyorsundur.",
+            "Bugün hayatımın en kötü günü gibi hissediyorum ama yarın ne olacağını kim bilebilir ki?",
+            "Ankeme teşekkür edemeden şehirden taşınmak içimde kalan tek ukte.",
+            "Belki de yalnızlık, kendi iç sesinle tanışmak için evrenin verdiği bir moladır."
+        ];
 
- <div class="section">
-  <div class="section-title">FİZİK MOTORU <span>02</span></div>
-  <div class="control">
-   <div class="control-head">Yerçekimi <output id="gravityVal">0.8</output></div>
-   <input id="gravity" type="range" min="0" max="3" step=".05" value=".8">
-  </div>
-  <div class="control">
-   <div class="control-head">Parçacık hızı <output id="speedVal">1.0</output></div>
-   <input id="speed" type="range" min="0" max="3" step=".1" value="1">
-  </div>
-  <div class="control">
-   <div class="control-head">Etkileşim gücü <output id="forceVal">1.5</output></div>
-   <input id="force" type="range" min=".2" max="5" step=".1" value="1.5">
-  </div>
-  <div class="control">
-   <div class="control-head">Parçacık sayısı <output id="countVal">650</output></div>
-   <input id="count" type="range" min="100" max="1400" step="50" value="650">
-  </div>
-  <div class="control">
-   <div class="control-head">Kuyruk uzunluğu <output id="trailVal">0.88</output></div>
-   <input id="trail" type="range" min=".05" max=".98" step=".01" value=".88">
-  </div>
- </div>
+        // LocalStorage'dan veya varsayılandan mesajları al
+        function getMessages() {
+            const custom = JSON.parse(localStorage.getItem('user_capsules')) || [];
+            return [...defaultWhispers, ...custom];
+        }
 
- <div class="section">
-  <div class="section-title">RENK EVRENİ <span>03</span></div>
-  <div class="colors">
-   <button class="swatch active" data-color="nebula" style="background:linear-gradient(135deg,#55dcff,#9b71ff)"></button>
-   <button class="swatch" data-color="fire" style="background:linear-gradient(135deg,#ffb33f,#ff365e)"></button>
-   <button class="swatch" data-color="emerald" style="background:linear-gradient(135deg,#4dffad,#1da5a0)"></button>
-   <button class="swatch" data-color="ice" style="background:linear-gradient(135deg,#fff,#8acbff)"></button>
-   <button class="swatch" data-color="rainbow" style="background:linear-gradient(135deg,red,orange,yellow,green,blue,purple)"></button>
-  </div>
- </div>
+        // Karakter sayacı
+        const textarea = document.getElementById('messageInput');
+        const charCount = document.getElementById('charCount');
 
- <div class="section">
-  <div class="section-title">KONTROLLER <span>04</span></div>
-  <button class="action primary" id="pause">Ⅱ DURAKLAT</button>
-  <button class="action" id="burst">✹ Büyük patlama oluştur</button>
-  <button class="action" id="reset">↻ Evreni yeniden oluştur</button>
-  <button class="action" id="clear">⌫ Ekranı temizle</button>
-  <button class="action" id="fullscreen">⛶ Tam ekran</button>
- </div>
-</aside>
+        textarea.addEventListener('input', () => {
+            charCount.textContent = textarea.value.length;
+        });
 
-<aside class="panel right" id="rightPanel">
- <div class="section">
-  <div class="panel-heading">Deneyler</div>
-  <div class="panel-sub">Hazır evren senaryoları.</div>
- </div>
- <div class="section">
-  <div class="section-title">EVREN ŞABLONLARI</div>
-  <div class="preset-card" data-preset="galaxy"><b>🌌 Galaksi</b><p>Spiral hareket eden devasa bir yıldız kümesi.</p></div>
-  <div class="preset-card" data-preset="explosion"><b>💥 Kozmik patlama</b><p>Merkezden dışarı doğru genişleyen enerji.</p></div>
-  <div class="preset-card" data-preset="orbit"><b>🪐 Yörünge</b><p>Merkez etrafında dönen parçacıklar.</p></div>
-  <div class="preset-card" data-preset="storm"><b>🌪 Kozmik fırtına</b><p>Birbirine karışan iki girdap.</p></div>
-  <div class="preset-card" data-preset="nebula"><b>✨ Bulutsu</b><p>Yavaşça dağılan renkli parçacık bulutu.</p></div>
- </div>
- <div class="section">
-  <div class="section-title">CANLI İSTATİSTİK</div>
-  <div class="metric">Parçacıklar <strong id="statCount">650</strong></div>
-  <div class="metric">FPS <strong id="fps">60</strong></div>
-  <div class="metric">Aktif etkileşim <strong id="statMode">Çekim</strong></div>
-  <div class="metric">Durum <strong id="statStatus">Çalışıyor</strong></div>
-  <div class="metric">Dokunuş <strong id="statTouch">0</strong></div>
- </div>
- <div class="section">
-  <div class="section-title">İPUCU</div>
-  <p style="font-size:11px;color:var(--muted);line-height:1.8">
-   Ekrana dokun ve parçacıkların davranışını değiştir. Birden fazla noktaya dokunarak evreni şekillendir.
-  </p>
- </div>
-</aside>
+        // Mesaj kaydetme
+        function saveMessage() {
+            const text = textarea.value.trim();
+            if(text.length < 3) {
+                showToast("Lütfen anlamlı birkaç kelime yaz.");
+                return;
+            }
 
-<button class="panel-toggle" id="panelToggle">☰ Kontroller</button>
-<div class="hint" id="hint">EVRENİ ŞEKİLLENDİRMEK İÇİN EKRANA DOKUN</div>
-<div class="toast" id="toast"></div>
+            const custom = JSON.parse(localStorage.getItem('user_capsules')) || [];
+            custom.push(text);
+            localStorage.setItem('user_capsules', JSON.stringify(custom));
 
-<div class="help" id="help">
- <div class="helpbox">
-  <div class="eyebrow">NEXUS MANUAL</div>
-  <h2>Evrenin kontrolü sende.</h2>
-  <p>Bu laboratuvarda fiziksel kuralları değiştirerek kendi dijital evrenini oluşturabilirsin.</p>
-  <ul>
-   <li><b>Çekim:</b> Parçacıkları dokunduğun noktaya çeker.</li>
-   <li><b>İtme:</b> Parçacıkları dokunduğun noktadan uzaklaştırır.</li>
-   <li><b>Girdap:</b> Parçacıkları döndürür.</li>
-   <li><b>Kara delik:</b> Parçacıkları merkezde toplar.</li>
-   <li><b>Patlama:</b> Parçacıkları dışarı fırlatır.</li>
-   <li><b>Parçacık ekle:</b> Dokunduğun yere yeni parçacıklar üretir.</li>
-  </ul>
-  <p>Mobilde parmağını sürükleyebilirsin. Bilgisayarda fareyi kullan. Ayarlardan hız, renk ve yoğunluğu değiştirebilirsin.</p>
-  <button class="action primary" id="closeHelp">ANLADIM, BAŞLAYALIM</button>
- </div>
-</div>
+            textarea.value = '';
+            charCount.textContent = '0';
+            showToast("Kapsül başarıyla boşluğa fırlatıldı.");
+        }
 
-<script>
-(()=>{
-"use strict";
+        // Rastgele mesaj çekme
+        function getRandomWhisper() {
+            const messages = getMessages();
+            const display = document.getElementById('whisper-display');
+            
+            // Animasyon efekti
+            display.style.opacity = 0;
+            
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * messages.length);
+                display.textContent = `"${messages[randomIndex]}"`;
+                display.style.opacity = 1;
+            }, 200);
+        }
 
-const canvas=document.getElementById("universe");
-const ctx=canvas.getContext("2d",{alpha:false});
-const $=id=>document.getElementById(id);
-
-let W=innerWidth,H=innerHeight,DPR=1;
-let particles=[];
-let stars=[];
-let mode="gravity";
-let paused=false;
-let colorMode="nebula";
-let touches=0;
-let pointer={x:-9999,y:-9999,down:false};
-let fields=[];
-let frame=0;
-let fps=60,lastFPS=performance.now(),fpsFrames=0;
-let hue=0;
-
-const config={
- gravity:.8,speed:1,force:1.5,count:650,trail:.88
-};
-
-const palettes={
- nebula:[190,215,245,270,290],
- fire:[15,25,38,350,5],
- emerald:[145,165,180,190,125],
- ice:[185,205,220,235,260],
- rainbow:null
-};
-
-function resize(){
- W=innerWidth;H=innerHeight;
- DPR=Math.min(devicePixelRatio||1,2);
- canvas.width=W*DPR;canvas.height=H*DPR;
- ctx.setTransform(DPR,0,0,DPR,0,0);
- createStars();
-}
-window.addEventListener("resize",resize);
-
-function rand(a,b){return a+Math.random()*(b-a)}
-function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
-
-function createStars(){
- stars=[];
- for(let i=0;i<Math.min(180,Math.floor(W*H/5000));i++){
-  stars.push({x:Math.random()*W,y:Math.random()*H,
-   size:rand(.3,1.5),alpha:rand(.1,.7),phase:rand(0,6)});
- }
-}
-
-function makeParticle(x,y,angle=null,speed=null){
- const a=angle===null?rand(0,Math.PI*2):angle;
- const s=speed===null?rand(.2,1.5):speed;
- return {
-  x,y,px:x,py:y,
-  vx:Math.cos(a)*s,vy:Math.sin(a)*s,
-  size:rand(.7,2.2),hue:rand(0,360),
-  mass:rand(.5,1.5),life:rand(0,1000)
- };
-}
-
-function createParticles(count=config.count,kind="random"){
- particles=[];
- const cx=W/2,cy=H/2;
- const radius=Math.min(W,H)*.37;
-
- for(let i=0;i<count;i++){
-  let x,y,a,r;
-  if(kind==="galaxy"){
-   a=rand(0,Math.PI*2);
-   const arm=Math.floor(rand(0,5));
-   a+=arm*Math.PI*2/5;
-   r=Math.sqrt(Math.random())*radius;
-   const twist=r*.012;
-   a+=twist;
-   x=cx+Math.cos(a)*r+rand(-8,8);
-   y=cy+Math.sin(a)*r*.6+rand(-8,8);
-  }else if(kind==="orbit"){
-   a=rand(0,Math.PI*2);r=rand(40,radius);
-   x=cx+Math.cos(a)*r;
-   y=cy+Math.sin(a)*r*.65;
-  }else if(kind==="explosion"){
-   a=rand(0,Math.PI*2);r=rand(0,radius);
-   x=cx+Math.cos(a)*r;y=cy+Math.sin(a)*r;
-  }else if(kind==="storm"){
-   const side=Math.random()<.5?-.55:.55;
-   x=cx+side*radius+rand(-80,80);
-   y=cy+rand(-radius*.7,radius*.7);
-  }else{
-   x=rand(0,W);y=rand(0,H);
-  }
-  const p=makeParticle(x,y);
-  if(kind==="galaxy"||kind==="orbit"){
-   const dx=x-cx,dy=y-cy;
-   const d=Math.hypot(dx,dy)||1;
-   const v=rand(.7,2.1);
-   p.vx=-dy/d*v;p.vy=dx/d*v;
-  }
-  if(kind==="explosion"){
-   const dx=x-cx,dy=y-cy,d=Math.hypot(dx,dy)||1;
-   p.vx=dx/d*rand(1,4);p.vy=dy/d*rand(1,4);
-  }
-  particles.push(p);
- }
-}
-
-function addBurst(x,y,amount=100,power=5){
- for(let i=0;i<amount;i++){
-  particles.push(makeParticle(x,y,rand(0,Math.PI*2),rand(.5,power)));
- }
- trimParticles();
-}
-
-function trimParticles(){
- if(particles.length>1800)particles.splice(0,particles.length-1800);
-}
-
-function setMode(next){
- mode=next;
- document.querySelectorAll("[data-mode]").forEach(b=>{
-  b.classList.toggle("active",b.dataset.mode===mode);
- });
- const names={
-  gravity:"Çekim",repel:"İtme",vortex:"Girdap",
-  blackhole:"Kara delik",explosion:"Patlama",paint:"Parçacık ekle"
- };
- $("statMode").textContent=names[mode]||mode;
- $("hint").textContent=({
-  gravity:"DOKUNDUĞUN NOKTA PARÇACIKLARI ÇEKER",
-  repel:"DOKUNDUĞUN NOKTADAN PARÇACIKLARI UZAKLAŞTIR",
-  vortex:"PARMAĞINLA BİR GİRDAP OLUŞTUR",
-  blackhole:"KARA DELİK PARÇACIKLARI YUTAR",
-  explosion:"DOKUN VE KOZMİK PATLAMA OLUŞTUR",
-  paint:"DOKUNDUĞUN YERE PARÇACIK EKLE"
- })[mode];
-}
-
-document.querySelectorAll("[data-mode]").forEach(b=>{
- b.addEventListener("click",()=>setMode(b.dataset.mode));
-});
-
-function addField(x,y){
- const existing=fields.find(f=>Math.hypot(f.x-x,f.y-y)<40);
- if(existing){existing.x=x;existing.y=y;return}
- fields.push({x,y,life:90});
- if(fields.length>8)fields.shift();
-}
-
-function handleInteraction(x,y){
- touches++;
- $("statTouch").textContent=touches;
- if(mode==="explosion"){
-  addBurst(x,y,100,6);
-  return;
- }
- if(mode==="paint"){
-  for(let i=0;i<35;i++){
-   particles.push(makeParticle(x+rand(-25,25),y+rand(-25,25)));
-  }
-  trimParticles();return;
- }
- addField(x,y);
-}
-
-function position(e){
- const r=canvas.getBoundingClientRect();
- return {x:e.clientX-r.left,y:e.clientY-r.top};
-}
-
-canvas.addEventListener("pointerdown",e=>{
- const p=position(e);
- pointer={...p,down:true};
- handleInteraction(p.x,p.y);
- canvas.setPointerCapture(e.pointerId);
-});
-canvas.addEventListener("pointermove",e=>{
- const p=position(e);
- pointer.x=p.x;pointer.y=p.y;
- if(pointer.down){
-  if(mode==="paint"){
-   for(let i=0;i<3;i++)particles.push(makeParticle(p.x,p.y));
-   trimParticles();
-  }else if(mode!=="explosion"){
-   addField(p.x,p.y);
-  }
- }
-});
-function release(){pointer.down=false}
-canvas.addEventListener("pointerup",release);
-canvas.addEventListener("pointercancel",release);
-
-function color(p){
- if(colorMode==="rainbow")return `hsl(${(p.hue+hue)%360},90%,68%)`;
- const pal=palettes[colorMode];
- const index=Math.floor((p.hue%360)/360*pal.length);
- return `hsl(${pal[index]},90%,68%)`;
-}
-
-function drawBackground(){
- ctx.fillStyle=`rgba(8,11,22,${1-config.trail})`;
- ctx.fillRect(0,0,W,H);
-
- for(const s of stars){
-  const alpha=s.alpha*(.65+.35*Math.sin(frame*.02+s.phase));
-  ctx.fillStyle=`rgba(190,211,255,${alpha})`;
-  ctx.beginPath();ctx.arc(s.x,s.y,s.size,0,Math.PI*2);ctx.fill();
- }
-
- const glow=ctx.createRadialGradient(W/2,H/2,10,W/2,H/2,Math.min(W,H)*.55);
- glow.addColorStop(0,"rgba(44,74,140,.07)");
- glow.addColorStop(1,"rgba(5,8,20,0)");
- ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
-}
-
-function drawFields(){
- fields.forEach((f,i)=>{
-  const alpha=Math.min(1,f.life/20);
-  ctx.beginPath();
-  ctx.arc(f.x,f.y,22+(90-f.life)*2.1,0,Math.PI*2);
-  ctx.strokeStyle=`rgba(100,210,255,${alpha*.25})`;
-  ctx.lineWidth=1;ctx.stroke();
-  ctx.beginPath();ctx.arc(f.x,f.y,4,0,Math.PI*2);
-  ctx.fillStyle=`rgba(150,225,255,${alpha*.7})`;ctx.fill();
-  f.life--;
- });
- fields=fields.filter(f=>f.life>0);
-}
-
-function physics(p){
- const cx=W/2,cy=H/2;
- const dt=config.speed;
- p.px=p.x;p.py=p.y;
-
- // Hafif merkez alanı
- const dx=cx-p.x,dy=cy-p.y;
- const d2=dx*dx+dy*dy+1000;
- p.vx+=dx/d2*.8*config.gravity;
- p.vy+=dy/d2*.8*config.gravity;
-
- // Kullanıcı etkileşim alanları
- for(const f of fields){
-  const fx=f.x-p.x,fy=f.y-p.y;
-  const d=Math.hypot(fx,fy)+.01;
-  const radius=250;
-  if(d>radius)continue;
-  const strength=(1-d/radius)*config.force;
-  const nx=fx/d,ny=fy/d;
-  if(mode==="gravity"){
-   p.vx+=nx*strength*.13;
-   p.vy+=ny*strength*.13;
-  }else if(mode==="repel"){
-   p.vx-=nx*strength*.19;
-   p.vy-=ny*strength*.19;
-  }else if(mode==="vortex"){
-   p.vx+=-ny*strength*.18;
-   p.vy+=nx*strength*.18;
-  }else if(mode==="blackhole"){
-   p.vx+=nx*strength*.27;
-   p.vy+=ny*strength*.27;
-   if(d<14){
-    p.x=rand(0,W);p.y=rand(0,H);p.vx=0;p.vy=0;
-   }
-  }
- }
-
- // Yörüngeye yakın hafif dönüş
- if(mode==="vortex"&&!fields.length){
-  const x=p.x-cx,y=p.y-cy;
-  const d=Math.hypot(x,y)+1;
-  p.vx+=-y/d*.03;p.vy+=x/d*.03;
- }
-
- p.vx*=.998;p.vy*=.998;
- const maxSpeed=6;
- const v=Math.hypot(p.vx,p.vy);
- if(v>maxSpeed){p.vx=p.vx/v*maxSpeed;p.vy=p.vy/v*maxSpeed}
-
- p.x+=p.vx*dt;p.y+=p.vy*dt;
-
- // Ekran sınırlarında yumuşak geri dönüş
- if(p.x<0){p.x=0;p.vx=Math.abs(p.vx)*.8}
- if(p.x>W){p.x=W;p.vx=-Math.abs(p.vx)*.8}
- if(p.y<0){p.y=0;p.vy=Math.abs(p.vy)*.8}
- if(p.y>H){p.y=H;p.vy=-Math.abs(p.vy)*.8}
- p.hue+=.08;
-}
-
-function drawParticles(){
- for(const p of particles){
-  physics(p);
-  const c=color(p);
-  const dx=p.x-p.px,dy=p.y-p.py;
-  ctx.beginPath();
-  ctx.moveTo(p.px,p.py);ctx.lineTo(p.x,p.y);
-  ctx.strokeStyle=c;ctx.globalAlpha=.35;
-  ctx.lineWidth=p.size*.8;ctx.stroke();
-  ctx.globalAlpha=1;
-  ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-  ctx.fillStyle=c;ctx.fill();
-
-  if(p.size>1.7){
-   ctx.beginPath();ctx.arc(p.x,p.y,p.size*3,0,Math.PI*2);
-   ctx.fillStyle=c;ctx.globalAlpha=.08;ctx.fill();ctx.globalAlpha=1;
-  }
- }
-}
-
-function draw(){
- if(!paused){
-  drawBackground();
-  drawFields();
-  drawParticles();
-  frame++;
-  hue+=.12;
- }else{
-  // Duraklatıldığında son kare korunur
- }
- requestAnimationFrame(draw);
-}
-
-function updateFPS(){
- const now=performance.now();fpsFrames++;
- if(now-lastFPS>=1000){
-  fps=Math.round(fpsFrames*1000/(now-lastFPS));
-  $("fps").textContent=fps;
-  $("statCount").textContent=particles.length.toLocaleString("tr-TR");
-  fpsFrames=0;lastFPS=now;
- }
-}
-function loop(){
- updateFPS();
- requestAnimationFrame(loop);
-}
-
-function toast(message){
- const t=$("toast");
- t.textContent=message;t.classList.add("show");
- clearTimeout(toast.timer);
- toast.timer=setTimeout(()=>t.classList.remove("show"),2000);
-}
-
-function setPaused(value){
- paused=value;
- $("pause").textContent=paused?"▶ DEVAM ET":"Ⅱ DURAKLAT";
- $("statStatus").textContent=paused?"Duraklatıldı":"Çalışıyor";
- if(paused)toast("Simülasyon duraklatıldı");
- else toast("Evren yeniden hareket ediyor");
-}
-
-$("pause").onclick=()=>setPaused(!paused);
-$("burst").onclick=()=>{
- addBurst(W/2,H/2,220,7);
- toast("Kozmik patlama oluşturuldu!");
-};
-$("reset").onclick=()=>{
- createParticles();
- fields=[];
- ctx.fillStyle="#080b16";ctx.fillRect(0,0,W,H);
- toast("Yeni evren oluşturuldu.");
-};
-$("clear").onclick=()=>{
- particles=[];fields=[];
- ctx.fillStyle="#080b16";ctx.fillRect(0,0,W,H);
- toast("Evren temizlendi.");
-};
-$("fullscreen").onclick=async()=>{
- try{
-  if(!document.fullscreenElement)await document.documentElement.requestFullscreen();
-  else await document.exitFullscreen();
- }catch(e){toast("Tam ekran bu tarayıcıda desteklenmiyor.");}
-};
-
-const controls=[
- ["gravity","gravityVal",v=>Number(v).toFixed(2)],
- ["speed","speedVal",v=>Number(v).toFixed(1)],
- ["force","forceVal",v=>Number(v).toFixed(1)],
- ["count","countVal",v=>v],
- ["trail","trailVal",v=>Number(v).toFixed(2)]
-];
-controls.forEach(([id,out,format])=>{
- $(id).addEventListener("input",()=>{
-  config[id]=Number($(id).value);
-  $(out).textContent=format(config[id]);
-  if(id==="count"){
-   const difference=config.count-particles.length;
-   if(difference>0){
-    for(let i=0;i<difference;i++)particles.push(makeParticle(rand(0,W),rand(0,H)));
-   }else if(difference<0){
-    particles.splice(0,-difference);
-   }
-   $("statCount").textContent=particles.length;
-  }
- });
-});
-
-document.querySelectorAll("[data-color]").forEach(b=>{
- b.onclick=()=>{
-  colorMode=b.dataset.color;
-  document.querySelectorAll("[data-color]").forEach(x=>x.classList.toggle("active",x===b));
-  toast("Renk evreni değiştirildi.");
- };
-});
-
-document.querySelectorAll("[data-preset]").forEach(b=>{
- b.onclick=()=>{
-  const kind=b.dataset.preset;
-  createParticles(config.count,kind);
-  fields=[];
-  if(kind==="explosion")addBurst(W/2,H/2,180,7);
-  if(kind==="storm")setMode("vortex");
-  if(kind==="orbit")setMode("gravity");
-  toast("Deney yüklendi: "+b.querySelector("b").textContent);
- };
-});
-
-$("panelToggle").onclick=()=>{
- $("leftPanel").classList.toggle("closed");
-};
-$("helpBtn").onclick=()=>$("help").classList.add("open");
-$("closeHelp").onclick=()=>$("help").classList.remove("open");
-
-resize();
-createParticles();
-draw();
-loop();
-
-})();
-</script>
+        // Toast bildirimi
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
