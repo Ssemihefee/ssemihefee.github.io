@@ -2,12 +2,492 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Benim Sitem</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f5f7">
+<title>ORBIT | Solar System Explorer</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#f5f5f7;
+ color:#1d1d1f;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ overflow-x:hidden;
+}
+nav{
+ height:65px;
+ padding:0 7%;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ border-bottom:1px solid #e5e5e7;
+ background:rgba(255,255,255,.8);
+ backdrop-filter:blur(20px);
+ position:relative;
+ z-index:5;
+}
+.logo{font-size:21px;font-weight:800;letter-spacing:3px}
+.nav-label{font-size:12px;color:#86868b}
+.hero{text-align:center;padding:55px 15px 10px}
+.tag{
+ color:#0071e3;
+ font-size:11px;
+ font-weight:700;
+ letter-spacing:3px;
+}
+h1{
+ font-size:clamp(42px,9vw,75px);
+ letter-spacing:-4px;
+ margin:15px 0 10px;
+ font-weight:750;
+}
+.subtitle{color:#86868b;font-size:15px}
+#space{
+ width:100%;
+ height:410px;
+ max-width:850px;
+ margin:auto;
+ display:block;
+ touch-action:none;
+ cursor:grab;
+}
+#space:active{cursor:grabbing}
+.info{
+ max-width:650px;
+ margin:0 auto;
+ padding:20px 25px;
+ text-align:center;
+}
+.planet-name{
+ font-size:38px;
+ letter-spacing:-2px;
+ font-weight:750;
+ margin:0;
+}
+.planet-desc{
+ color:#86868b;
+ font-size:14px;
+ line-height:1.7;
+ max-width:480px;
+ margin:12px auto;
+}
+.stats{
+ display:flex;
+ justify-content:center;
+ gap:12px;
+ flex-wrap:wrap;
+ margin:22px 0;
+}
+.stat{
+ background:white;
+ border:1px solid #e8e8eb;
+ border-radius:15px;
+ padding:13px 22px;
+ min-width:115px;
+}
+.stat strong{display:block;font-size:16px}
+.stat span{font-size:10px;color:#86868b}
+.controls{
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:12px;
+ margin:20px auto 35px;
+}
+button{
+ border:0;
+ cursor:pointer;
+ font-family:inherit;
+}
+.arrow{
+ width:43px;height:43px;
+ border-radius:50%;
+ background:white;
+ border:1px solid #e5e5e7;
+ font-size:20px;
+}
+.arrow:active{transform:scale(.93)}
+.explore{
+ display:flex;
+ gap:8px;
+ justify-content:center;
+ flex-wrap:wrap;
+ max-width:650px;
+ margin:0 auto 60px;
+ padding:0 15px;
+}
+.planet-btn{
+ background:white;
+ border:1px solid #e8e8eb;
+ border-radius:30px;
+ padding:10px 15px;
+ color:#555;
+ font-size:12px;
+ transition:.2s;
+}
+.planet-btn.active{
+ background:#1d1d1f;
+ color:white;
+ border-color:#1d1d1f;
+}
+footer{
+ text-align:center;
+ border-top:1px solid #e5e5e7;
+ padding:25px;
+ color:#999;
+ font-size:11px;
+}
+.hint{
+ text-align:center;
+ color:#aaa;
+ font-size:11px;
+ margin-top:-5px;
+}
+@media(max-width:600px){
+ nav{padding:0 20px}
+ #space{height:330px}
+ .hero{padding-top:40px}
+ h1{letter-spacing:-2px}
+ .planet-name{font-size:32px}
+ .stat{padding:12px 15px;min-width:95px}
+}
+</style>
 </head>
+
 <body>
-  <h1>Merhaba Dünya!</h1>
-  <p>Bu benim ilk internet sitem.</p>
+
+<nav>
+ <div class="logo">ORBIT<span style="color:#0071e3">.</span></div>
+ <div class="nav-label">SOLAR SYSTEM EXPLORER</div>
+</nav>
+
+<header class="hero">
+ <div class="tag">EVRENİ KEŞFET</div>
+ <h1>Beyond the ordinary.</h1>
+ <p class="subtitle">Güneş sisteminin gizemli dünyalarına yolculuk.</p>
+</header>
+
+<canvas id="space"></canvas>
+<div class="hint">Gezegeni döndürmek için sürükle veya dokun.</div>
+
+<section class="info">
+ <div class="tag" id="planet-number">PLANET 01 / 08</div>
+ <h2 class="planet-name" id="planet-name">Merkür</h2>
+ <p class="planet-desc" id="planet-desc"></p>
+
+ <div class="stats">
+  <div class="stat">
+   <strong id="distance">57.9 milyon km</strong>
+   <span>GÜNEŞE UZAKLIK</span>
+  </div>
+  <div class="stat">
+   <strong id="diameter">4.879 km</strong>
+   <span>ÇAP</span>
+  </div>
+  <div class="stat">
+   <strong id="day">58.6 gün</strong>
+   <span>BİR GÜN</span>
+  </div>
+ </div>
+
+ <div class="controls">
+  <button class="arrow" id="prev" aria-label="Önceki gezegen">‹</button>
+  <span style="font-size:12px;color:#888">GEZEGENLERİ KEŞFET</span>
+  <button class="arrow" id="next" aria-label="Sonraki gezegen">›</button>
+ </div>
+</section>
+
+<div class="explore" id="planet-list"></div>
+
+<footer>
+ ORBIT · SOLAR SYSTEM EXPLORER
+ <br><br>
+ An interactive journey through our solar system.
+</footer>
+
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+
+const planets=[
+ {
+  name:"Merkür",color:0x99958e,
+  distance:"57.9 milyon km",diameter:"4.879 km",day:"58.6 gün",
+  desc:"Güneş sisteminin en küçük gezegeni. Güneş'e en yakın dünyada sıcaklık farkları oldukça büyüktür.",
+  size:1,rough:0.8
+ },
+ {
+  name:"Venüs",color:0xd6a66c,
+  distance:"108.2 milyon km",diameter:"12.104 km",day:"243 gün",
+  desc:"Yoğun atmosferi ve aşırı sıcak yüzeyiyle bilinen Venüs, gökyüzünün en parlak gezegenlerinden biridir.",
+  size:1.3,rough:0.4
+ },
+ {
+  name:"Dünya",color:0x267edb,
+  distance:"149.6 milyon km",diameter:"12.742 km",day:"23 saat 56 dk",
+  desc:"Okyanusları, atmosferi ve yaşamıyla bilinen eşsiz gezegenimiz.",
+  size:1.35,rough:0.5
+ },
+ {
+  name:"Mars",color:0xc65b36,
+  distance:"227.9 milyon km",diameter:"6.779 km",day:"24 saat 37 dk",
+  desc:"Kızıl gezegen. Devasa volkanlara, derin kanyonlara ve eski su izlerine ev sahipliği yapar.",
+  size:1.15,rough:0.9
+ },
+ {
+  name:"Jüpiter",color:0xc69b75,
+  distance:"778.6 milyon km",diameter:"139.820 km",day:"9 saat 56 dk",
+  desc:"Güneş sisteminin en büyük gezegeni. Büyük Kırmızı Leke adlı dev fırtınasıyla ünlüdür.",
+  size:2.15,rough:0.4
+ },
+ {
+  name:"Satürn",color:0xd8bd8e,
+  distance:"1,43 milyar km",diameter:"116.460 km",day:"10 saat 42 dk",
+  desc:"Muhteşem halka sistemiyle tanınan gaz devi. Halkaları çoğunlukla buz ve kaya parçalarından oluşur.",
+  size:1.9,rough:0.4,ring:true
+ },
+ {
+  name:"Uranüs",color:0x80cbd0,
+  distance:"2,87 milyar km",diameter:"50.724 km",day:"17 saat 14 dk",
+  desc:"Mavi-yeşil renkli buz devi. Dönme ekseni oldukça eğiktir.",
+  size:1.55,rough:0.3
+ },
+ {
+  name:"Neptün",color:0x3156ca,
+  distance:"4,50 milyar km",diameter:"49.244 km",day:"16 saat 6 dk",
+  desc:"Güneş sisteminin bilinen en uzak gezegeni. Güçlü rüzgârlarıyla dikkat çeker.",
+  size:1.5,rough:0.3
+ }
+];
+
+const canvas=document.getElementById("space");
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xf5f5f7);
+
+const camera=new THREE.PerspectiveCamera(
+ 38,canvas.clientWidth/canvas.clientHeight,0.1,100
+);
+camera.position.z=8;
+
+const renderer=new THREE.WebGLRenderer({
+ canvas,
+ antialias:true,
+ alpha:true
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(canvas.clientWidth,canvas.clientHeight,false);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+
+scene.add(new THREE.AmbientLight(0xffffff,2));
+
+const light=new THREE.DirectionalLight(0xffffff,3);
+light.position.set(-4,3,6);
+scene.add(light);
+
+const group=new THREE.Group();
+scene.add(group);
+
+let sphere;
+let ring;
+let selected=0;
+let dragging=false;
+let previousX=0;
+let previousY=0;
+let targetX=0;
+let targetY=0;
+
+function createTexture(color,index){
+ const c=document.createElement("canvas");
+ c.width=1024;
+ c.height=512;
+ const ctx=c.getContext("2d");
+
+ const base=new THREE.Color(color);
+ const r=Math.floor(base.r*255);
+ const g=Math.floor(base.g*255);
+ const b=Math.floor(base.b*255);
+
+ ctx.fillStyle=`rgb(${r},${g},${b})`;
+ ctx.fillRect(0,0,1024,512);
+
+ let seed=index+123;
+ function random(){
+  seed=(seed*16807)%2147483647;
+  return (seed-1)/2147483646;
+ }
+
+ for(let i=0;i<1800;i++){
+  const x=random()*1024;
+  const y=random()*512;
+  const size=2+random()*35;
+  const shade=random()>.5?1.3:.65;
+  ctx.fillStyle=`rgba(${Math.min(255,r*shade)},${Math.min(255,g*shade)},${Math.min(255,b*shade)},${random()*.35})`;
+  ctx.beginPath();
+  ctx.ellipse(x,y,size,size*.4,random()*3,0,Math.PI*2);
+  ctx.fill();
+ }
+
+ if(index===2){
+  for(let i=0;i<40;i++){
+   ctx.fillStyle="rgba(35,110,60,.7)";
+   ctx.beginPath();
+   ctx.ellipse(random()*1024,random()*512,15+random()*50,8+random()*25,random()*3,0,Math.PI*2);
+   ctx.fill();
+  }
+ }
+
+ if(index===4 || index===5){
+  for(let i=0;i<50;i++){
+   ctx.fillStyle=`rgba(100,55,20,${random()*.25})`;
+   ctx.fillRect(0,random()*512,1024,2+random()*12);
+  }
+ }
+
+ const texture=new THREE.CanvasTexture(c);
+ texture.colorSpace=THREE.SRGBColorSpace;
+ return texture;
+}
+
+function createStars(){
+ const positions=[];
+ for(let i=0;i<500;i++){
+  positions.push(
+   (Math.random()-.5)*30,
+   (Math.random()-.5)*18,
+   -5-Math.random()*15
+  );
+ }
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+ const mat=new THREE.PointsMaterial({
+  color:0xabb7c8,size:.035,transparent:true,opacity:.6
+ });
+ scene.add(new THREE.Points(geo,mat));
+}
+createStars();
+
+function buildPlanet(index){
+ const p=planets[index];
+
+ if(sphere){
+  group.remove(sphere);
+  sphere.geometry.dispose();
+  sphere.material.map?.dispose();
+  sphere.material.dispose();
+ }
+ if(ring){
+  group.remove(ring);
+  ring.geometry.dispose();
+  ring.material.dispose();
+  ring=null;
+ }
+
+ const geometry=new THREE.SphereGeometry(p.size,96,96);
+ const material=new THREE.MeshStandardMaterial({
+  map:createTexture(p.color,index),
+  roughness:p.rough,
+  metalness:0
+ });
+
+ sphere=new THREE.Mesh(geometry,material);
+ group.add(sphere);
+
+ if(p.ring){
+  const geo=new THREE.RingGeometry(2.3,3.5,120);
+  const mat=new THREE.MeshBasicMaterial({
+   color:0xc7a879,
+   side:THREE.DoubleSide,
+   transparent:true,
+   opacity:.75
+  });
+  ring=new THREE.Mesh(geo,mat);
+  ring.rotation.x=Math.PI*.37;
+  group.add(ring);
+ }
+
+ targetX=0;
+ targetY=0;
+ group.rotation.set(0,0,0);
+
+ document.getElementById("planet-name").textContent=p.name;
+ document.getElementById("planet-desc").textContent=p.desc;
+ document.getElementById("distance").textContent=p.distance;
+ document.getElementById("diameter").textContent=p.diameter;
+ document.getElementById("day").textContent=p.day;
+ document.getElementById("planet-number").textContent=
+  `PLANET ${String(index+1).padStart(2,"0")} / 08`;
+
+ document.querySelectorAll(".planet-btn").forEach((btn,i)=>{
+  btn.classList.toggle("active",i===index);
+ });
+}
+
+const list=document.getElementById("planet-list");
+planets.forEach((p,i)=>{
+ const btn=document.createElement("button");
+ btn.className="planet-btn";
+ btn.textContent=p.name;
+ btn.addEventListener("click",()=>selectPlanet(i));
+ list.appendChild(btn);
+});
+
+function selectPlanet(index){
+ selected=(index+planets.length)%planets.length;
+ buildPlanet(selected);
+}
+
+document.getElementById("prev").onclick=()=>selectPlanet(selected-1);
+document.getElementById("next").onclick=()=>selectPlanet(selected+1);
+
+canvas.addEventListener("pointerdown",e=>{
+ dragging=true;
+ previousX=e.clientX;
+ previousY=e.clientY;
+ canvas.setPointerCapture(e.pointerId);
+});
+
+canvas.addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ targetY+=(e.clientX-previousX)*.009;
+ targetX+=(e.clientY-previousY)*.009;
+ previousX=e.clientX;
+ previousY=e.clientY;
+});
+
+function stopDrag(){dragging=false}
+canvas.addEventListener("pointerup",stopDrag);
+canvas.addEventListener("pointercancel",stopDrag);
+
+function resize(){
+ const w=canvas.clientWidth;
+ const h=canvas.clientHeight;
+ camera.aspect=w/h;
+ camera.updateProjectionMatrix();
+ renderer.setSize(w,h,false);
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+}
+window.addEventListener("resize",resize);
+
+buildPlanet(0);
+
+function animate(){
+ requestAnimationFrame(animate);
+
+ if(!dragging){
+  targetY+=.002;
+ }
+
+ group.rotation.y+=(targetY-group.rotation.y)*.08;
+ group.rotation.x+=(targetX-group.rotation.x)*.08;
+
+ if(sphere)sphere.rotation.y+=.0015;
+ renderer.render(scene,camera);
+}
+animate();
+</script>
+
 </body>
 </html>
