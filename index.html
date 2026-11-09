@@ -1,1 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gürültü Ölçer</title>
+<meta name="description" content="Mikrofonla ortamın ses seviyesini ölç, ders çalışmaya uygun mu öğren. Ses kaydedilmez.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f1eff8; --card:#fbfaff; --ink:#1b1830; --muted:#625d7e; --line:#d6d1ea;
+  --ok:#1f8a5b; --mid:#b7791f; --bad:#d6452b; --accent:#5b3df5;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#110f1d; --card:#1a1730; --ink:#efecfb; --muted:#9d97bd; --line:#322d52;
+    --ok:#4fd39a; --mid:#f0b429; --bad:#ff7a5c; --accent:#9b87ff;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg);color:var(--ink);
+  font:400 17px/1.55 "Figtree",system-ui,sans-serif;
+  padding:24px 16px 56px;
+}
+main{max-width:620px;margin:0 auto}
+h1{font:700 clamp(1.9rem,7vw,2.8rem)/1.05 "Unbounded",system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:12px 0 24px;max-width:48ch}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:22px;margin-bottom:18px}
+.reading{display:flex;align-items:baseline;gap:10px}
+#db{font:700 clamp(4rem,22vw,6.5rem)/1 "Unbounded",sans-serif;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--c,var(--muted));transition:color .3s}
+.unit{font:500 1.2rem "Unbounded",sans-serif;color:var(--muted)}
+#etiket{font-weight:600;font-size:1.15rem;margin:6px 0 2px}
+#yorum{color:var(--muted);margin:0;min-height:3.2em}
+canvas{display:block;width:100%;height:150px;margin:18px 0 6px;border-radius:10px;background:var(--bg)}
+.axis{display:flex;justify-content:space-between;color:var(--muted);font-size:.82rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stat{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat span{display:block;color:var(--muted);font-size:.82rem}
+.stat b{font:700 1.3rem "Unbounded",sans-serif;font-variant-numeric:tabular-nums}
+button{
+  font:600 1.05rem "Figtree",sans-serif;cursor:pointer;width:100%;
+  background:var(--accent);color:#fff;border:0;border-radius:14px;padding:16px;min-height:54px;
+}
+@media (prefers-color-scheme:dark){button{color:#110f1d}}
+button.stop{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.err{color:var(--bad);margin:12px 0 0;min-height:1.4em}
+.scale{list-style:none;margin:0;padding:0}
+.scale li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1.5px solid var(--line)}
+.scale li:first-child{border-top:0}
+.scale li.on{font-weight:600}
+.scale li.on::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c);align-self:center;margin-right:-4px}
+.scale .r{color:var(--muted);white-space:nowrap}
+h2{font:700 1.05rem "Unbounded",sans-serif;margin:0 0 10px}
+footer{color:var(--muted);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Gürültü ölçer</h1>
+  <p class="lead">Telefonunun mikrofonuyla ortamın ses seviyesini ölç. Ders çalışmak için uygun mu, hemen gör.</p>
 
+  <section class="card" aria-live="polite">
+    <div class="reading"><div id="db">--</div><div class="unit">dB</div></div>
+    <div id="etiket">Ölçüm başlamadı</div>
+    <p id="yorum">Aşağıdaki düğmeye bas ve mikrofon iznini ver.</p>
+    <canvas id="grafik" role="img" aria-label="Son 60 saniyenin ses seviyesi grafiği"></canvas>
+    <div class="axis"><span>60 sn önce</span><span>şimdi</span></div>
+    <div class="stats">
+      <div class="stat"><span>En düşük</span><b id="min">--</b></div>
+      <div class="stat"><span>Ortalama</span><b id="avg">--</b></div>
+      <div class="stat"><span>En yüksek</span><b id="max">--</b></div>
+    </div>
+  </section>
+
+  <button id="btn" type="button">Ölçmeye başla</button>
+  <p class="err" id="err" role="alert"></p>
+
+  <section class="card" style="margin-top:12px">
+    <h2>Seviyeler</h2>
+    <ul class="scale" id="scale"></ul>
+  </section>
+
+  <footer>Ses kaydedilmez ve hiçbir yere gönderilmez; sadece seviye hesaplanır. Telefon mikrofonları farklı olduğu için değerler yaklaşıktır, profesyonel cihazın yerini tutmaz.</footer>
+</main>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var ZONES = [
+    {max:40,  name:"Çok sessiz",   range:"40 dB altı",  color:"--ok",  note:"Neredeyse sessiz. Yoğun odaklanma için çok iyi."},
+    {max:55,  name:"Sessiz",       range:"40-55 dB",    color:"--ok",  note:"Ders çalışmak için ideal ortam."},
+    {max:70,  name:"Normal konuşma", range:"55-70 dB",  color:"--mid", note:"Hafif dikkat dağıtıcı. Okuma işleri olur, zor konularda kulaklık işe yarar."},
+    {max:85,  name:"Gürültülü",    range:"70-85 dB",    color:"--bad", note:"Odaklanmak zor. Daha sessiz bir yer bulmayı dene."},
+    {max:999, name:"Çok gürültülü", range:"85 dB üstü", color:"--bad", note:"Uzun süre kalma, kulak sağlığına zarar verebilir."}
+  ];
+  var OFFSET = 94;      // dBFS -> yaklaşık dB (kaba kalibrasyon)
+  var MIN_DB = 20, MAX_DB = 110, HISTORY = 240, TICK = 250;
+
+  var ctx=null, analyser=null, stream=null, buf=null, raf=0, running=false;
+  var smooth=null, lastTick=0, hist=[], all=[];
+  var canvas=$("grafik"), g=canvas.getContext("2d");
+
+  function css(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function zoneOf(v){ for(var i=0;i<ZONES.length;i++) if(v<ZONES[i].max) return i; return ZONES.length-1; }
+
+  function buildScale(active){
+    var ul=$("scale"); ul.innerHTML="";
+    ZONES.forEach(function(z,i){
+      var li=document.createElement("li");
+      if(i===active){ li.className="on"; li.style.setProperty("--c","var("+z.color+")"); }
+      var a=document.createElement("span"); a.textContent=z.name;
+      var b=document.createElement("span"); b.className="r"; b.textContent=z.range;
+      li.appendChild(a); li.appendChild(b); ul.appendChild(li);
+    });
+  }
+
+  function measure(){
+    analyser.getFloatTimeDomainData(buf);
+    var s=0; for(var i=0;i<buf.length;i++) s+=buf[i]*buf[i];
+    var rms=Math.sqrt(s/buf.length);
+    var dbfs=20*Math.log10(Math.max(rms,1e-7));
+    var v=dbfs+OFFSET;
+    return Math.min(MAX_DB,Math.max(MIN_DB,v));
+  }
+
+  function resize(){
+    var r=canvas.getBoundingClientRect(), d=window.devicePixelRatio||1;
+    canvas.width=Math.round(r.width*d); canvas.height=Math.round(r.height*d);
+    g.setTransform(d,0,0,d,0,0);
+  }
+
+  function draw(){
+    var w=canvas.clientWidth, h=canvas.clientHeight;
+    g.clearRect(0,0,w,h);
+    function y(v){ return h-((v-MIN_DB)/(MAX_DB-MIN_DB))*h; }
+    g.lineWidth=1; g.setLineDash([4,4]); g.font="11px Figtree, sans-serif"; g.fillStyle=css("--muted");
+    [55,70].forEach(function(t){
+      g.strokeStyle=css("--line"); g.beginPath(); g.moveTo(0,y(t)); g.lineTo(w,y(t)); g.stroke();
+      g.fillText(t+" dB",4,y(t)-3);
+    });
+    g.setLineDash([]);
+    if(hist.length<2) return;
+    var step=w/(HISTORY-1), off=(HISTORY-hist.length)*step;
+    for(var i=1;i<hist.length;i++){
+      g.strokeStyle=css(ZONES[zoneOf(hist[i])].color); g.lineWidth=3; g.lineCap="round";
+      g.beginPath(); g.moveTo(off+(i-1)*step,y(hist[i-1])); g.lineTo(off+i*step,y(hist[i])); g.stroke();
+    }
+  }
+
+  function show(v){
+    var i=zoneOf(v), z=ZONES[i];
+    $("db").textContent=Math.round(v);
+    $("db").style.setProperty("--c","var("+z.color+")");
+    $("etiket").textContent=z.name;
+    $("yorum").textContent=z.note;
+    buildScale(i);
+  }
+
+  function loop(t){
+    if(!running) return;
+    var v=measure();
+    smooth = smooth===null ? v : smooth+(v-smooth)*0.18;
+    $("db").textContent=Math.round(smooth);
+    if(t-lastTick>=TICK){
+      lastTick=t;
+      hist.push(smooth); if(hist.length>HISTORY) hist.shift();
+      all.push(smooth);
+      var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
+      var av=all.reduce(function(a,b){return a+b;},0)/all.length;
+      $("min").textContent=Math.round(mn); $("max").textContent=Math.round(mx); $("avg").textContent=Math.round(av);
+      show(smooth); draw();
+    }
+    raf=requestAnimationFrame(loop);
+  }
+
+  function start(){
+    var err=$("err"); err.textContent="";
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      err.textContent="Bu tarayıcı mikrofon erişimini desteklemiyor ya da sayfa https üzerinden açılmadı.";
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})
+    .then(function(s){
+      stream=s;
+      var AC=window.AudioContext||window.webkitAudioContext;
+      ctx=new AC();
+      var src=ctx.createMediaStreamSource(s);
+      analyser=ctx.createAnalyser(); analyser.fftSize=2048;
+      buf=new Float32Array(analyser.fftSize);
+      src.connect(analyser);
+      hist=[]; all=[]; smooth=null; lastTick=0; running=true;
+      $("btn").textContent="Durdur"; $("btn").className="stop";
+      resize(); raf=requestAnimationFrame(loop);
+    })
+    .catch(function(e){
+      err.textContent = (e&&e.name==="NotAllowedError")
+        ? "Mikrofon izni verilmedi. Tarayıcı ayarlarından bu site için mikrofonu açıp tekrar dene."
+        : "Mikrofon açılamadı. Başka bir uygulama kullanıyor olabilir.";
+    });
+  }
+
+  function stop(){
+    running=false; cancelAnimationFrame(raf);
+    if(stream) stream.getTracks().forEach(function(t){ t.stop(); });
+    if(ctx) ctx.close();
+    stream=null; ctx=null;
+    $("btn").textContent="Yeniden başlat"; $("btn").className="";
+  }
+
+  $("btn").addEventListener("click", function(){ running ? stop() : start(); });
+  window.addEventListener("resize", function(){ resize(); draw(); });
+  buildScale(-1);
+  resize();
+})();
+</script>
+</body>
+</html>
